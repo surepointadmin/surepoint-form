@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>슈어포인트 접수 시스템</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #2b5ce6;
+      --primary-light: #e8f0ff;
+      --primary-dark: #1e47c0;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --red: #f04452;
+      --red-light: #ffebee;
+      --green: #30b06e;
+      --green-light: #e8f5e9;
+      --orange: #f59e0b;
+      --orange-light: #fff4e5;
+      --purple: #7c3aed;
+      
+      --gray-50: #f9fafb;
+      --gray-100: #f2f4f6;
+      --gray-200: #e5e8eb;
+      --gray-300: #d1d6db;
+      --gray-400: #b0b8c1;
+      --gray-500: #8b95a1;
+      --gray-600: #6b7684;
+      --gray-700: #4e5968;
+      --gray-800: #333d4b;
+      --gray-900: #191f28;
+      --white: #ffffff;
+    }
+    
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+    
+    /* 헤더 */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+
+    .header-logo-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: dotPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+    
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: -0.5px;
+    }
+    
+    .header p {
+      margin-top: 8px;
+      font-size: 15px;
+      color: var(--gray-500);
+    }
+    
+    /* 탭 */
+    .tabs {
+      display: flex;
+      background: var(--white);
+      border-radius: 14px;
+      padding: 6px;
+      gap: 6px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--gray-600);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .tab-btn:hover:not(.active) {
+      background: var(--gray-50);
+      color: var(--gray-800);
+    }
+    
+    .tab-btn.active {
+      background: var(--navy);
+      color: var(--white);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+    }
+    
+    .tab-btn .tab-icon {
+      font-size: 18px;
+    }
+    
+    /* 탭 컨텐츠 */
+    .tab-content {
+      display: none;
+      animation: fadeInUp 0.3s ease;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* 레이아웃 */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+    
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 20px;
+    }
+    
+    /* 카드 */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+    
+    .card-title .icon.blue { background: var(--primary-light); }
+    .card-title .icon.green { background: var(--green-light); }
+    .card-title .icon.red { background: var(--red-light); }
+    .card-title .icon.orange { background: var(--orange-light); }
+    .card-title .icon.purple { background: #f3e8ff; }
+    
+    /* 불러오기 카드 */
+    .load-card {
+      background: linear-gradient(135deg, #e8f0ff 0%, #f0f7ff 100%);
+      border: 1px dashed var(--primary);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    
+    .load-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .load-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    
+    .load-card-desc {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-left: auto;
+    }
+    
+    .load-search {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .load-search input {
+      flex: 1;
+      padding: 12px 14px;
+      font-size: 14px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      background: var(--white);
+    }
+    
+    .load-search input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    
+    .load-btn {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      font-family: inherit;
+      position: relative;
+    }
+    
+    .load-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .load-btn.loading {
+      color: transparent;
+      pointer-events: none;
+    }
+
+    .load-btn.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .load-result {
+      margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .load-result.show { display: block; }
+    .load-result.success { background: var(--green-light); color: #146c43; }
+    .load-result.error { background: var(--red-light); color: var(--red); }
+    
+    /* 검색 결과 카드 리스트 */
+    .load-cards {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    
+    .load-cards:empty {
+      display: none;
+    }
+    
+    .load-card-item {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeUp 0.25s ease;
+    }
+    
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .load-card-item:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(43, 92, 230, 0.12);
+    }
+    
+    .load-card-item-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    
+    .load-card-company {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    
+    .load-card-phone {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      font-family: 'Pretendard', sans-serif;
+    }
+    
+    .load-card-row2 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--gray-600);
+    }
+    
+    .load-card-name {
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+    
+    .load-card-company-sub {
+      color: var(--primary);
+      font-weight: 600;
+      padding: 2px 6px;
+      background: var(--primary-light);
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    
+    .load-card-time {
+      color: var(--gray-400);
+      margin-left: auto;
+    }
+    
+    .load-cards-count {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin: 4px 0 6px 4px;
+    }
+    
+    /* 폼 그리드 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    .form-grid.single {
+      grid-template-columns: 1fr;
+    }
+    
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .field.full {
+      grid-column: 1 / -1;
+    }
+    
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .field label .required {
+      color: var(--primary);
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      background: var(--white);
+      color: var(--gray-900);
+      transition: all 0.15s ease;
+      outline: none;
+    }
+    
+    input::placeholder, textarea::placeholder {
+      color: var(--gray-400);
+    }
+    
+    input:hover, select:hover, textarea:hover {
+      border-color: var(--gray-300);
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    
+    input.error, select.error, textarea.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px var(--red-light);
+    }
+    
+    input.autofilled {
+      background: var(--green-light);
+      animation: pulseFill 0.5s ease;
+    }
+
+    @keyframes pulseFill {
+      0% { background: var(--green); }
+      100% { background: var(--green-light); }
+    }
+    
+    textarea {
+      resize: none;
+      min-height: 100px;
+    }
+    
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 18px;
+      padding-right: 44px;
+    }
+    
+    /* 고객 구분 토글 (3단계) */
+    .customer-toggle {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 4px;
+      background: var(--gray-100);
+      border-radius: 12px;
+    }
+
+    .customer-toggle-btn {
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--gray-600);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .customer-toggle-btn:hover {
+      color: var(--gray-800);
+    }
+
+    .customer-toggle-btn.active {
+      background: var(--white);
+      color: var(--navy);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .customer-toggle-btn[data-type="existing"].active {
+      color: var(--primary);
+    }
+    
+    /* 기존 고객 하위 선택 */
+    .existing-sub {
+      display: none;
+      margin-top: 8px;
+      animation: slideDown 0.2s ease;
+    }
+    
+    .existing-sub.show {
+      display: block;
+    }
+    
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .existing-sub label {
+      font-size: 12px;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+      display: block;
+    }
+    
+    .existing-sub-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    
+    .existing-sub-btn {
+      padding: 8px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--gray-200);
+      background: var(--white);
+      color: var(--gray-700);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    
+    .existing-sub-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    .existing-sub-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+    }
+    
+    .existing-sub-btn.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    /* 버튼 */
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      position: relative;
+    }
+    
+    .btn-primary {
+      background: var(--navy);
+      color: var(--white);
+    }
+    
+    .btn-primary:hover {
+      background: var(--navy-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn.loading {
+      color: transparent;
+      pointer-events: none;
+    }
+    
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      margin: -9px 0 0 -9px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 토스트 */
+    .toast-wrap {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .toast {
+      padding: 12px 20px;
+      background: var(--gray-900);
+      color: var(--white);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: toastIn 0.3s ease;
+      max-width: 90vw;
+    }
+    
+    .toast.error {
+      background: var(--red);
+    }
+
+    .toast.warning {
+      background: var(--orange);
+    }
+    
+    .toast.success {
+      background: var(--green);
+    }
+    
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* 모달 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal {
+      background: var(--white);
+      border-radius: 16px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalIn 0.25s ease;
+    }
+    
+    @keyframes modalIn {
+      from { transform: translateY(20px) scale(0.96); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      color: var(--gray-400);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+    
+    .modal-close:hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+    
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .preview-box {
+      background: var(--gray-50);
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--gray-700);
+      white-space: pre-wrap;
+      font-family: 'Pretendard', sans-serif;
+      line-height: 1.7;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--gray-100);
+    }
+    
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-800);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+    
+    .btn-success {
+      background: var(--primary);
+      color: var(--white);
+    }
+    
+    .btn-success:hover {
+      background: var(--primary-dark);
+    }
+
+    .modal-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: var(--primary-light);
+      font-size: 13px;
+      color: var(--gray-700);
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .modal-notice strong {
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    
+    /* 반응형 */
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: static;
+      }
+    }
+    
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px 16px;
+      }
+      
+      .header h1 {
+        font-size: 22px;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .card {
+        padding: 20px;
+        border-radius: 14px;
+      }
+      
+      .tab-btn {
+        padding: 12px 8px;
+        font-size: 13px;
+      }
+      
+      .load-search {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-logo">
+        <span class="header-logo-dot"></span>
+        <span>SUREPOINT</span>
+      </div>
+      <h1>슈어포인트 접수 시스템</h1>
+      <p>고객 상담 내용을 입력하고 팀에 공유하세요</p>
+    </div>
+    
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="inquiry">
+        <span class="tab-icon">📞</span>
+        <span>문의 접수</span>
+      </button>
+      <button class="tab-btn" data-tab="install">
+        <span class="tab-icon">🔧</span>
+        <span>설치 일정 접수</span>
+      </button>
+    </div>
+    
+    <!-- 문의 탭 -->
+    <div class="tab-content active" id="tab-inquiry">
+      <div class="layout">
+        <div class="main-content">
+          <!-- 기본 정보 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon blue">🏢</span>
+              기본 정보
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>업체명 <span class="required">*</span></label>
+                <input type="text" name="i_company_name" placeholder="예: 한국물류센터" />
+              </div>
+              <div class="field">
+                <label>담당자 성함 <span class="required">*</span></label>
+                <input type="text" name="i_client_name" placeholder="홍길동" />
+              </div>
+              <div class="field">
+                <label>직함</label>
+                <input type="text" name="i_client_position" placeholder="예: 안전관리자, 팀장" />
+              </div>
+              <div class="field">
+                <label>연락처 <span class="required">*</span></label>
+                <input type="tel" name="i_client_phone" placeholder="010-1234-5678" />
+              </div>
+              <div class="field">
+                <label>이메일</label>
+                <input type="email" name="i_client_email" placeholder="example@company.com" />
+              </div>
+              <div class="field">
+                <label>현장 주소 <span class="required">*</span></label>
+                <input type="text" name="i_address" placeholder="도로명 주소 기재" />
+              </div>
+            </div>
+          </div>
+          
+          <!-- 문의 내용 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon orange">💬</span>
+              문의 내용
+            </div>
+            <div class="form-grid single">
+              <div class="field">
+                <label>문의 내용 <span class="required">*</span></label>
+                <textarea name="i_inquiry" placeholder="고객이 어떤 문의를 했는지 상세히 기재해주세요&#10;예: 지게차 안전장비 견적 알아보는 중, MMA 공법 가능 여부 확인 필요 등" style="min-height: 140px;"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="sidebar">
+          <!-- 내부 관리 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon red">📁</span>
+              내부 관리
+            </div>
+            <div class="form-grid single">
+              <div class="field">
+                <label>전화 응대자 <span class="required">*</span></label>
+                <input type="text" name="i_call_handler" placeholder="응대자 이름" />
+              </div>
+              <div class="field">
+                <label>상담 채널</label>
+                <select name="i_source">
+                  <option value="전화">전화</option>
+                  <option value="이메일">이메일</option>
+                  <option value="홈페이지">홈페이지</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>고객 구분</label>
+                <div class="customer-toggle" data-toggle="i_customer">
+                  <button type="button" class="customer-toggle-btn active" data-type="new">신규</button>
+                  <button type="button" class="customer-toggle-btn" data-type="existing">기존</button>
+                  <button type="button" class="customer-toggle-btn" data-type="unknown">확인 불가</button>
+                </div>
+                <div class="existing-sub" data-existing-sub="i">
+                  <label>기존 고객 분류</label>
+                  <div class="existing-sub-options">
+                    <button type="button" class="existing-sub-btn" data-value="AJ네트웍스물류">AJ네트웍스물류</button>
+                    <button type="button" class="existing-sub-btn" data-value="AJ네트웍스건설">AJ네트웍스건설</button>
+                    <button type="button" class="existing-sub-btn full-width" data-value="대리점">대리점</button>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>특이사항 메모</label>
+                <textarea name="i_notes" style="min-height:70px" placeholder="내부 참고용 메모"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="send-btn-inquiry">문의방으로 전송</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 설치 탭 -->
+    <div class="tab-content" id="tab-install">
+      <!-- 불러오기 -->
+      <div class="load-card">
+        <div class="load-card-header">
+          <span style="font-size:18px;">🔍</span>
+          <span class="load-card-title">기존 문의 검색</span>
+          <span class="load-card-desc">업체명, 담당자명 또는 전화번호로 검색</span>
+        </div>
+        <div class="load-search">
+          <input type="text" id="load-phone" placeholder="예: 한국물류, 홍길동, 010-1234..." />
+          <button type="button" class="load-btn" id="load-btn">검색</button>
+        </div>
+        <div class="load-result" id="load-result"></div>
+        <div class="load-cards" id="load-cards"></div>
+      </div>
+      
+      <div class="layout">
+        <div class="main-content">
+          <!-- 기본 정보 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon blue">🏢</span>
+              기본 정보
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>업체명 <span class="required">*</span></label>
+                <input type="text" name="s_company_name" placeholder="예: 한국물류센터" />
+              </div>
+              <div class="field">
+                <label>담당자 성함 <span class="required">*</span></label>
+                <input type="text" name="s_client_name" placeholder="홍길동" />
+              </div>
+              <div class="field">
+                <label>직함</label>
+                <input type="text" name="s_client_position" placeholder="예: 안전관리자, 팀장" />
+              </div>
+              <div class="field">
+                <label>연락처 <span class="required">*</span></label>
+                <input type="tel" name="s_client_phone" placeholder="010-1234-5678" />
+              </div>
+              <div class="field">
+                <label>이메일</label>
+                <input type="email" name="s_client_email" placeholder="example@company.com" />
+              </div>
+              <div class="field">
+                <label>현장 주소 <span class="required">*</span></label>
+                <input type="text" name="s_address" placeholder="도로명 주소 기재" />
+              </div>
+            </div>
+          </div>
+          
+          <!-- 설치 제품 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon green">📦</span>
+              설치 제품
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>설치 모델 <span class="required">*</span></label>
+                <select name="s_install_model">
+                  <option value="">선택해주세요</option>
+                  <option value="AI-S1">AI-S1</option>
+                  <option value="AI-S2">AI-S2</option>
+                  <option value="AI-S3">AI-S3</option>
+                  <option value="미정">미정 (상담 후 결정)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>모델별 수량 <span class="required">*</span></label>
+                <input type="text" name="s_model_quantity" placeholder="예: 5대" />
+              </div>
+              <div class="field full">
+                <label>대상 장비 / 대수 <span class="required">*</span></label>
+                <input type="text" name="s_target_equipment" placeholder="예: 지게차 5대, 승합차 3대" />
+              </div>
+            </div>
+          </div>
+          
+          <!-- 일정 및 특이사항 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon orange">📅</span>
+              일정 및 특이사항
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>희망 일정 1순위 <span class="required">*</span></label>
+                <input type="date" name="s_preferred_date_1" />
+              </div>
+              <div class="field">
+                <label>희망 일정 2순위</label>
+                <input type="date" name="s_preferred_date_2" />
+              </div>
+              <div class="field full">
+                <label>현장 특이사항</label>
+                <textarea name="s_site_notes" placeholder="예: 지게차 가동 중단 어려움, 야간 설치만 가능 등"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="sidebar">
+          <!-- 내부 관리 -->
+          <div class="card">
+            <div class="card-title">
+              <span class="icon red">📁</span>
+              내부 관리
+            </div>
+            <div class="form-grid single">
+              <div class="field">
+                <label>설치 담당자 <span class="required">*</span></label>
+                <input type="text" name="s_call_handler" placeholder="담당자 이름" />
+              </div>
+              <div class="field">
+                <label>상담 채널</label>
+                <select name="s_source">
+                  <option value="전화">전화</option>
+                  <option value="이메일">이메일</option>
+                  <option value="홈페이지">홈페이지</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>고객 구분</label>
+                <div class="customer-toggle" data-toggle="s_customer">
+                  <button type="button" class="customer-toggle-btn active" data-type="new">신규</button>
+                  <button type="button" class="customer-toggle-btn" data-type="existing">기존</button>
+                  <button type="button" class="customer-toggle-btn" data-type="unknown">확인 불가</button>
+                </div>
+                <div class="existing-sub" data-existing-sub="s">
+                  <label>기존 고객 분류</label>
+                  <div class="existing-sub-options">
+                    <button type="button" class="existing-sub-btn" data-value="AJ네트웍스물류">AJ네트웍스물류</button>
+                    <button type="button" class="existing-sub-btn" data-value="AJ네트웍스건설">AJ네트웍스건설</button>
+                    <button type="button" class="existing-sub-btn full-width" data-value="대리점">대리점</button>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label>특이사항 메모</label>
+                <textarea name="s_notes" style="min-height:70px" placeholder="내부 참고용 메모"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="send-btn-install">설치방으로 전송</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="toast-wrap"></div>
+  
+  <!-- 모달 -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>메시지 미리보기</h3>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-notice">
+        <span>📌 전송 대상:</span>
+        <strong id="modal-target">[자동화] 슈어포인트 문의방</strong>
+      </div>
+      <div class="modal-body">
+        <div class="preview-box" id="preview"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="copy-btn">복사하기</button>
+        <button class="btn btn-success" id="confirm-btn">전송하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 설정 =====
+    const CONFIG = { 
+      inquiryWebhookUrl: 'https://nfrnd.app.n8n.cloud/webhook/surepoint-inquiry',
+      installWebhookUrl: 'https://nfrnd.app.n8n.cloud/webhook/surepoint-install',
+      loadWebhookUrl: 'https://nfrnd.app.n8n.cloud/webhook/surepoint-load',
+      maxRetries: 3,
+      retryDelay: 1000,
+      timeout: 30000
+    };
+    
+    // ===== 상태 =====
+    let currentTab = 'inquiry';      // inquiry | install
+    let customerTypes = {
+      i_customer: 'new',
+      s_customer: 'new'
+    };
+    let customerSubTypes = {           // '기존' 클릭 시 어느 분류인지
+      i_customer: '',
+      s_customer: ''
+    };
+    let pendingSendType = null;       // 모달에서 전송할 타입
+    
+    // ===== 로깅 =====
+    function log(level, message, data) {
+      const timestamp = new Date().toISOString();
+      console.log(`[${level.toUpperCase()}] ${timestamp} ${message}`, data || '');
+    }
+    
+    // ===== 토스트 =====
+    function toast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.querySelector('.toast-wrap').appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+    
+    // ===== 탭 전환 =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${target}`));
+        currentTab = target;
+        log('info', '탭 전환', { tab: target });
+      };
+    });
+    
+    // ===== 고객 구분 토글 =====
+    document.querySelectorAll('.customer-toggle').forEach(toggle => {
+      const toggleName = toggle.dataset.toggle;
+      const prefix = toggleName.startsWith('i_') ? 'i' : 's';
+      const subEl = document.querySelector(`[data-existing-sub="${prefix}"]`);
+      
+      toggle.querySelectorAll('.customer-toggle-btn').forEach(btn => {
+        btn.onclick = () => {
+          toggle.querySelectorAll('.customer-toggle-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          customerTypes[toggleName] = btn.dataset.type;
+          
+          // '기존' 클릭 시 하위 옵션 펼치기
+          if (btn.dataset.type === 'existing') {
+            subEl?.classList.add('show');
+          } else {
+            subEl?.classList.remove('show');
+            customerSubTypes[toggleName] = '';
+            subEl?.querySelectorAll('.existing-sub-btn').forEach(b => b.classList.remove('active'));
+          }
+        };
+      });
+    });
+    
+    // ===== 기존 고객 하위 분류 선택 =====
+    document.querySelectorAll('.existing-sub').forEach(sub => {
+      const prefix = sub.dataset.existingSub;
+      const toggleName = `${prefix}_customer`;
+      sub.querySelectorAll('.existing-sub-btn').forEach(btn => {
+        btn.onclick = () => {
+          sub.querySelectorAll('.existing-sub-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          customerSubTypes[toggleName] = btn.dataset.value;
+        };
+      });
+    });
+    
+    // ===== 데이터 수집 =====
+    function getInquiryData() {
+      const get = n => document.querySelector(`[name="${n}"]`)?.value.trim() || '';
+      return {
+        company_name: get('i_company_name'),
+        client_name: get('i_client_name'),
+        client_position: get('i_client_position'),
+        client_phone: get('i_client_phone'),
+        client_email: get('i_client_email'),
+        address: get('i_address'),
+        inquiry: get('i_inquiry'),
+        call_handler: get('i_call_handler'),
+        source: get('i_source'),
+        customer_type: customerTypes.i_customer,
+        customer_sub_type: customerSubTypes.i_customer,
+        notes: get('i_notes')
+      };
+    }
+    
+    function getInstallData() {
+      const get = n => document.querySelector(`[name="${n}"]`)?.value.trim() || '';
+      return {
+        company_name: get('s_company_name'),
+        client_name: get('s_client_name'),
+        client_position: get('s_client_position'),
+        client_phone: get('s_client_phone'),
+        client_email: get('s_client_email'),
+        address: get('s_address'),
+        install_model: get('s_install_model'),
+        model_quantity: get('s_model_quantity'),
+        target_equipment: get('s_target_equipment'),
+        preferred_date_1: get('s_preferred_date_1'),
+        preferred_date_2: get('s_preferred_date_2'),
+        site_notes: get('s_site_notes'),
+        call_handler: get('s_call_handler'),
+        source: get('s_source'),
+        customer_type: customerTypes.s_customer,
+        customer_sub_type: customerSubTypes.s_customer,
+        notes: get('s_notes')
+      };
+    }
+    
+    // ===== 검증 =====
+    function validate(type) {
+      const required = type === 'inquiry' ? {
+        i_company_name: '업체명',
+        i_client_name: '담당자 성함',
+        i_client_phone: '연락처',
+        i_address: '현장 주소',
+        i_inquiry: '문의 내용',
+        i_call_handler: '전화 응대자'
+      } : {
+        s_company_name: '업체명',
+        s_client_name: '담당자 성함',
+        s_client_phone: '연락처',
+        s_address: '현장 주소',
+        s_install_model: '설치 모델',
+        s_model_quantity: '모델별 수량',
+        s_target_equipment: '대상 장비 / 대수',
+        s_preferred_date_1: '희망 일정 1순위',
+        s_call_handler: '설치 담당자'
+      };
+      
+      document.querySelectorAll('input, select, textarea').forEach(e => e.classList.remove('error'));
+      
+      for (const [key, label] of Object.entries(required)) {
+        const el = document.querySelector(`[name="${key}"]`);
+        if (!el || !el.value.trim()) {
+          if (el) {
+            el.classList.add('error');
+            el.focus();
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          toast(`${label}을(를) 입력해주세요`, 'error');
+          return false;
+        }
+      }
+      
+      // 기존 고객 선택 시 하위 분류 필수
+      const customerKey = type === 'inquiry' ? 'i_customer' : 's_customer';
+      if (customerTypes[customerKey] === 'existing' && !customerSubTypes[customerKey]) {
+        toast('기존 고객 분류를 선택해주세요 (AJ네트웍스물류/건설/대리점)', 'error');
+        const subEl = document.querySelector(`[data-existing-sub="${type === 'inquiry' ? 'i' : 's'}"]`);
+        subEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      
+      return true;
+    }
+    
+    function customerLabel(type, subType) {
+      const main = { new: '신규', existing: '기존', unknown: '확인 불가' }[type] || '확인 불가';
+      if (type === 'existing' && subType) {
+        return `기존 (${subType})`;
+      }
+      return main;
+    }
+    
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+    }
+    
+    // ===== 메시지 포맷 =====
+    function formatInquiryMsg(d) {
+      const now = new Date();
+      const t = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()<12?'오전':'오후'} ${now.getHours()%12||12}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const customerBadge = d.customer_type === 'existing' ? ' 🔄 [기존고객]' : '';
+      
+      let m = `# [슈어포인트] 문의 접수${customerBadge} [신규]\n`;
+      m += `■ 기본 정보\n`;
+      m += `- 업체명 : ${d.company_name}\n`;
+      m += `- 담당자 : ${d.client_name}${d.client_position ? ` (${d.client_position})` : ''}\n`;
+      m += `- 연락처 : ${d.client_phone}\n`;
+      if (d.client_email) m += `- 이메일 : ${d.client_email}\n`;
+      m += `- 현장 주소 : ${d.address}\n`;
+      m += `\n■ 문의 내용\n${d.inquiry}\n`;
+      m += `\n--------------------\n내부 메모)\n`;
+      m += `- 상담 채널 : ${d.source || '-'}\n`;
+      m += `- 전화 응대자 : ${d.call_handler}\n`;
+      m += `- 고객 구분 : ${customerLabel(d.customer_type, d.customer_sub_type)}\n`;
+      if (d.notes) m += `- 특이사항 : ${d.notes}\n`;
+      m += `--------------------\n※ 담당자 배정 요청드립니다.\n📌 ${t}`;
+      return m;
+    }
+    
+    function formatInstallMsg(d) {
+      const now = new Date();
+      const t = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()<12?'오전':'오후'} ${now.getHours()%12||12}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const customerBadge = d.customer_type === 'existing' ? ' 🔄 [기존고객]' : '';
+      
+      let m = `# [슈어포인트] 설치 일정 접수${customerBadge} [신규]\n`;
+      m += `■ 기본 정보\n`;
+      m += `- 업체명 : ${d.company_name}\n`;
+      m += `- 담당자 : ${d.client_name}${d.client_position ? ` (${d.client_position})` : ''}\n`;
+      m += `- 연락처 : ${d.client_phone}\n`;
+      if (d.client_email) m += `- 이메일 : ${d.client_email}\n`;
+      m += `- 현장 주소 : ${d.address}\n`;
+      m += `\n■ 설치 제품\n`;
+      m += `- 설치 모델 : ${d.install_model}\n`;
+      m += `- 모델별 수량 : ${d.model_quantity}\n`;
+      m += `- 대상 장비 / 대수 : ${d.target_equipment}\n`;
+      m += `\n■ 일정 및 특이사항\n`;
+      m += `- 희망 일정 1순위 : ${formatDate(d.preferred_date_1)}\n`;
+      if (d.preferred_date_2) m += `- 희망 일정 2순위 : ${formatDate(d.preferred_date_2)}\n`;
+      if (d.site_notes) m += `- 현장 특이사항 : ${d.site_notes}\n`;
+      m += `\n--------------------\n내부 메모)\n`;
+      m += `- 상담 채널 : ${d.source || '-'}\n`;
+      m += `- 설치 담당자 : ${d.call_handler}\n`;
+      m += `- 고객 구분 : ${customerLabel(d.customer_type, d.customer_sub_type)}\n`;
+      if (d.notes) m += `- 특이사항 : ${d.notes}\n`;
+      m += `--------------------\n※ 설치 담당자 배정 요청드립니다.\n📌 ${t}`;
+      return m;
+    }
+    
+    // ===== 모달 =====
+    function showModal(content, type) {
+      pendingSendType = type;
+      document.getElementById('preview').textContent = content;
+      document.getElementById('modal-target').textContent = 
+        type === 'inquiry' ? '[자동화] 슈어포인트 문의방' : '[자동화] 슈어포인트 설치방';
+      document.getElementById('modal').classList.add('active');
+    }
+    
+    function hideModal() {
+      document.getElementById('modal').classList.remove('active');
+      pendingSendType = null;
+    }
+    
+    // ===== fetch with timeout & retry =====
+    async function fetchWithTimeout(url, options, timeout) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') throw new Error('요청 시간이 초과되었습니다');
+        throw error;
+      }
+    }
+    
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    async function send(data, type) {
+      const url = type === 'inquiry' ? CONFIG.inquiryWebhookUrl : CONFIG.installWebhookUrl;
+      const message = type === 'inquiry' ? formatInquiryMsg(data) : formatInstallMsg(data);
+      
+      log('info', '전송 시작', { type, company: data.company_name });
+      
+      const payload = JSON.stringify({
+        ...data,
+        action: 'save_and_notify',
+        type,
+        jandi_message: message
+      });
+      
+      let lastError = null;
+      for (let attempt = 1; attempt <= CONFIG.maxRetries; attempt++) {
+        try {
+          const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+          }, CONFIG.timeout);
+          
+          if (response.ok) {
+            log('info', '전송 성공', { type, attempt });
+            return { success: true };
+          }
+          
+          lastError = new Error(`서버 응답 오류: ${response.status}`);
+          if (response.status >= 400 && response.status < 500) break;
+        } catch (error) {
+          lastError = error;
+          log('error', `전송 실패 (시도 ${attempt})`, { error: error.message });
+        }
+        
+        if (attempt < CONFIG.maxRetries) {
+          toast(`전송 실패, ${attempt + 1}번째 재시도 중...`, 'warning');
+          await delay(CONFIG.retryDelay * attempt);
+        }
+      }
+      
+      return { success: false, error: lastError?.message || '알 수 없는 오류' };
+    }
+    
+    // ===== 검색 (불러오기) =====
+    function autoFillFromData(d) {
+      const fillIfExists = (name, value) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el && value) {
+          el.value = value;
+          el.classList.add('autofilled');
+          setTimeout(() => el.classList.remove('autofilled'), 1500);
+        }
+      };
+      
+      fillIfExists('s_company_name', d.company_name);
+      fillIfExists('s_client_name', d.client_name);
+      fillIfExists('s_client_position', d.client_position);
+      fillIfExists('s_client_phone', d.client_phone);
+      fillIfExists('s_client_email', d.client_email);
+      fillIfExists('s_address', d.address);
+      
+      // 고객 구분 → 기존 자동 변경
+      customerTypes.s_customer = 'existing';
+      document.querySelectorAll('[data-toggle="s_customer"] .customer-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === 'existing');
+      });
+      
+      const sSubEl = document.querySelector('[data-existing-sub="s"]');
+      sSubEl?.classList.add('show');
+      
+      if (d.customer_sub_type) {
+        customerSubTypes.s_customer = d.customer_sub_type;
+        sSubEl?.querySelectorAll('.existing-sub-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.value === d.customer_sub_type);
+        });
+      }
+    }
+    
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      try {
+        // "2026. 4. 28. 오후 3:36:08" 같은 포맷 파싱 시도
+        const cleaned = dateStr.replace(/오전|오후/, '').replace(/\./g, '-').replace(/\s+/g, ' ').trim();
+        const d = new Date(cleaned);
+        if (isNaN(d.getTime())) return dateStr.split(' ')[0] || '';
+        
+        const now = new Date();
+        const diff = now - d;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        
+        if (days === 0) return '오늘';
+        if (days === 1) return '어제';
+        if (days < 7) return days + '일 전';
+        if (days < 30) return Math.floor(days / 7) + '주 전';
+        if (days < 365) return Math.floor(days / 30) + '개월 전';
+        return Math.floor(days / 365) + '년 전';
+      } catch (e) {
+        return '';
+      }
+    }
+    
+    function renderSearchResults(results, query) {
+      const cardsEl = document.getElementById('load-cards');
+      cardsEl.innerHTML = '';
+      
+      // 결과 개수 안내 (항상 표시 - 1건이든 여러 건이든)
+      const countEl = document.createElement('div');
+      countEl.className = 'load-cards-count';
+      countEl.textContent = `'${query}' 검색 결과 ${results.length}건 — 클릭하면 자동 입력됩니다`;
+      cardsEl.appendChild(countEl);
+      
+      results.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'load-card-item';
+        card.innerHTML = `
+          <div class="load-card-item-row1">
+            <span class="load-card-company">${d.company_name || '(업체명 없음)'}</span>
+            <span class="load-card-phone">${d.client_phone || '-'}</span>
+          </div>
+          <div class="load-card-row2">
+            <span class="load-card-name">${d.client_name || '-'}</span>
+            ${d.client_position ? '<span>· ' + d.client_position + '</span>' : ''}
+            <span class="load-card-company-sub">@ ${d.company_name || '-'}</span>
+            <span class="load-card-time">${timeAgo(d.received_at)}</span>
+          </div>
+        `;
+        card.onclick = () => {
+          autoFillFromData(d);
+          cardsEl.innerHTML = '';
+          const result = document.getElementById('load-result');
+          result.className = 'load-result show success';
+          result.innerHTML = `✅ <strong>${d.company_name}</strong> (${d.client_name}) 선택됨 — 자동 입력 완료`;
+          toast('정보가 입력됐어요', 'success');
+        };
+        cardsEl.appendChild(card);
+      });
+    }
+    
+    document.getElementById('load-btn').onclick = async function() {
+      const queryInput = document.getElementById('load-phone');
+      const rawQuery = queryInput.value.trim();
+      const result = document.getElementById('load-result');
+      const cardsEl = document.getElementById('load-cards');
+      
+      cardsEl.innerHTML = '';
+      
+      if (!rawQuery || rawQuery.length < 2) {
+        result.className = 'load-result show error';
+        result.textContent = '⚠️ 2글자 이상 입력해주세요';
+        return;
+      }
+      
+      this.classList.add('loading');
+      result.classList.remove('show');
+      
+      try {
+        const response = await fetchWithTimeout(
+          `${CONFIG.loadWebhookUrl}?q=${encodeURIComponent(rawQuery)}`,
+          { method: 'GET' },
+          CONFIG.timeout
+        );
+        
+        const json = await response.json();
+        log('info', '검색 응답', json);
+        
+        if (json.found && json.results && json.results.length > 0) {
+          renderSearchResults(json.results, rawQuery);
+        } else {
+          result.className = 'load-result show error';
+          result.textContent = `❌ '${rawQuery}' 검색 결과가 없습니다. 직접 입력해주세요`;
+        }
+      } catch (error) {
+        log('error', '검색 실패', { error: error.message });
+        result.className = 'load-result show error';
+        result.textContent = `❌ 검색 실패: ${error.message}`;
+      } finally {
+        this.classList.remove('loading');
+      }
+    };
+    
+    // Enter 키로 검색
+    document.getElementById('load-phone').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('load-btn').click();
+      }
+    });
+    
+    // ===== 리셋 =====
+    function resetTab(type) {
+      const prefix = type === 'inquiry' ? 'i_' : 's_';
+      document.querySelectorAll(`[name^="${prefix}"]`).forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+      });
+      
+      const customerKey = `${prefix}customer`;
+      customerTypes[customerKey] = 'new';
+      customerSubTypes[customerKey] = '';
+      document.querySelectorAll(`[data-toggle="${customerKey}"] .customer-toggle-btn`).forEach(b => {
+        b.classList.toggle('active', b.dataset.type === 'new');
+      });
+      
+      // 기존 sub 영역 닫기
+      const subPrefix = type === 'inquiry' ? 'i' : 's';
+      const subEl = document.querySelector(`[data-existing-sub="${subPrefix}"]`);
+      subEl?.classList.remove('show');
+      subEl?.querySelectorAll('.existing-sub-btn').forEach(b => b.classList.remove('active'));
+      
+      if (type === 'install') {
+        document.getElementById('load-phone').value = '';
+        document.getElementById('load-result').classList.remove('show');
+        document.getElementById('load-cards').innerHTML = '';
+      }
+    }
+    
+    // ===== 이벤트 - 전송 버튼 =====
+    document.getElementById('send-btn-inquiry').onclick = () => {
+      if (validate('inquiry')) {
+        showModal(formatInquiryMsg(getInquiryData()), 'inquiry');
+      }
+    };
+    
+    document.getElementById('send-btn-install').onclick = () => {
+      if (validate('install')) {
+        showModal(formatInstallMsg(getInstallData()), 'install');
+      }
+    };
+    
+    // ===== 모달 이벤트 =====
+    document.getElementById('modal-close').onclick = hideModal;
+    document.getElementById('modal').onclick = e => { if (e.target.id === 'modal') hideModal(); };
+    
+    document.getElementById('copy-btn').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById('preview').textContent);
+        toast('복사되었습니다');
+      } catch(e) { toast('복사 실패', 'error'); }
+    };
+    
+    document.getElementById('confirm-btn').onclick = async function() {
+      const btn = this;
+      const type = pendingSendType;
+      const data = type === 'inquiry' ? getInquiryData() : getInstallData();
+      
+      btn.classList.add('loading');
+      btn.disabled = true;
+      
+      const result = await send(data, type);
+      
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      
+      if (result.success) {
+        toast('전송 완료! 🎉');
+        hideModal();
+        resetTab(type);
+      } else {
+        toast(`전송 실패: ${result.error}`, 'error');
+        setTimeout(() => {
+          if (confirm('전송에 실패했습니다.\n메시지를 복사하여 직접 잔디에 전송하시겠습니까?')) {
+            navigator.clipboard.writeText(document.getElementById('preview').textContent)
+              .then(() => toast('복사되었습니다'));
+          }
+        }, 500);
+      }
+    };
+    
+    // ===== 전화번호 자동 포맷 =====
+    document.querySelectorAll('input[type="tel"]').forEach(i => {
+      i.oninput = e => {
+        let v = e.target.value.replace(/[^0-9]/g, '');
+        if (v.length > 3 && v.length <= 7) v = v.slice(0,3) + '-' + v.slice(3);
+        else if (v.length > 7) v = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+        e.target.value = v;
+      };
+    });
+    
+    // ===== 에러 표시 제거 =====
+    document.querySelectorAll('input, select, textarea').forEach(e => {
+      e.addEventListener('input', () => e.classList.remove('error'));
+    });
+    
+    document.onkeydown = e => { if (e.key === 'Escape') hideModal(); };
+    
+    log('info', '슈어포인트 양식 초기화 완료');
+  </script>
+</body>
+</html>
