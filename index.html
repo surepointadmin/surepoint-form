@@ -382,15 +382,6 @@
       color: var(--gray-700);
     }
     
-    .load-card-company-sub {
-      color: var(--primary);
-      font-weight: 600;
-      padding: 2px 6px;
-      background: var(--primary-light);
-      border-radius: 4px;
-      font-size: 11px;
-    }
-    
     .load-card-time {
       color: var(--gray-400);
       margin-left: auto;
@@ -400,6 +391,142 @@
       font-size: 12px;
       color: var(--gray-500);
       margin: 4px 0 6px 4px;
+    }
+    
+    /* 설치 제품 동적 추가 */
+    .card-title-hint {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray-500);
+    }
+    
+    .install-product-block {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+      animation: slideDown 0.25s ease;
+    }
+    
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .install-product-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .install-product-num {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .btn-remove-product {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    
+    .btn-remove-product:hover {
+      background: var(--red-light);
+      border-color: var(--red);
+      color: var(--red);
+    }
+    
+    .btn-add-product {
+      width: 100%;
+      padding: 12px;
+      background: var(--white);
+      border: 1px dashed var(--gray-300);
+      border-radius: 10px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    
+    .btn-add-product:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    
+    /* 담당사 선택 (설치 담당자) */
+    .company-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .company-pill {
+      padding: 10px 8px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    
+    .company-pill:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    .company-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    
+    .installer-name-wrap {
+      display: none;
+      animation: slideDown 0.25s ease;
+    }
+    
+    .installer-name-wrap.show { display: block; }
+    
+    .installer-name-wrap.required-field input {
+      border-color: var(--orange);
+      background: #fffaf0;
+    }
+    
+    .installer-name-hint {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--gray-500);
+    }
+    
+    .installer-name-hint.required-hint {
+      color: var(--orange);
+      font-weight: 600;
     }
     
     /* 폼 그리드 */
@@ -946,7 +1073,12 @@
             <div class="form-grid single">
               <div class="field">
                 <label>전화 응대자 <span class="required">*</span></label>
-                <input type="text" name="i_call_handler" placeholder="응대자 이름" />
+                <input type="text" name="i_call_handler" list="call-handler-list" placeholder="이름 입력 또는 선택" />
+                <datalist id="call-handler-list">
+                  <option value="이재훈"></option>
+                  <option value="김범석"></option>
+                  <option value="김다예"></option>
+                </datalist>
               </div>
               <div class="field">
                 <label>상담 채널</label>
@@ -1040,32 +1172,17 @@
             </div>
           </div>
           
-          <!-- 설치 제품 -->
+          <!-- 설치 제품 (동적 추가 가능) -->
           <div class="card">
             <div class="card-title">
               <span class="icon green">📦</span>
               설치 제품
+              <span class="card-title-hint">여러 모델 신청 시 "+ 설치 제품 추가" 클릭</span>
             </div>
-            <div class="form-grid">
-              <div class="field">
-                <label>설치 모델 <span class="required">*</span></label>
-                <select name="s_install_model">
-                  <option value="">선택해주세요</option>
-                  <option value="AI-S1">AI-S1</option>
-                  <option value="AI-S2">AI-S2</option>
-                  <option value="AI-S3">AI-S3</option>
-                  <option value="미정">미정 (상담 후 결정)</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>모델별 수량 <span class="required">*</span></label>
-                <input type="text" name="s_model_quantity" placeholder="예: 5대" />
-              </div>
-              <div class="field full">
-                <label>대상 장비 / 대수 <span class="required">*</span></label>
-                <input type="text" name="s_target_equipment" placeholder="예: 지게차 5대, 승합차 3대" />
-              </div>
-            </div>
+            <div id="install-products"></div>
+            <button type="button" class="btn-add-product" id="btn-add-product">
+              <span style="font-size:18px;">+</span> 설치 제품 추가
+            </button>
           </div>
           
           <!-- 일정 및 특이사항 -->
@@ -1076,12 +1193,12 @@
             </div>
             <div class="form-grid">
               <div class="field">
-                <label>희망 일정 1순위 <span class="required">*</span></label>
-                <input type="date" name="s_preferred_date_1" />
+                <label>희망 일정 시작일 <span class="required">*</span></label>
+                <input type="date" name="s_preferred_start" />
               </div>
               <div class="field">
-                <label>희망 일정 2순위</label>
-                <input type="date" name="s_preferred_date_2" />
+                <label>희망 일정 종료일 <span class="required">*</span></label>
+                <input type="date" name="s_preferred_end" />
               </div>
               <div class="field full">
                 <label>현장 특이사항</label>
@@ -1100,8 +1217,20 @@
             </div>
             <div class="form-grid single">
               <div class="field">
-                <label>설치 담당자 <span class="required">*</span></label>
-                <input type="text" name="s_call_handler" placeholder="담당자 이름" />
+                <label>설치 담당사 <span class="required">*</span></label>
+                <div class="company-pills" id="company-pills">
+                  <button type="button" class="company-pill" data-company="슈어">슈어</button>
+                  <button type="button" class="company-pill" data-company="유신">유신</button>
+                  <button type="button" class="company-pill" data-company="국일">국일</button>
+                  <button type="button" class="company-pill" data-company="다인">다인</button>
+                  <button type="button" class="company-pill" data-company="자체설치">자체설치</button>
+                  <button type="button" class="company-pill" data-company="기타">기타</button>
+                </div>
+                <input type="hidden" name="s_company" id="s_company" />
+                <div class="installer-name-wrap" id="installer-name-wrap">
+                  <input type="text" name="s_installer_name" id="s_installer_name" placeholder="담당자 이름 입력" />
+                  <div class="installer-name-hint" id="installer-name-hint">선택 사항이지만 입력하시면 추적이 정확합니다</div>
+                </div>
               </div>
               <div class="field">
                 <label>상담 채널</label>
@@ -1273,6 +1402,18 @@
     
     function getInstallData() {
       const get = n => document.querySelector(`[name="${n}"]`)?.value.trim() || '';
+      
+      // 동적 설치 제품 블록 수집
+      const products = [];
+      document.querySelectorAll('.install-product-block').forEach(block => {
+        const model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+        const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
+        const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
+        if (model || qty || target) {
+          products.push({ model, qty, target });
+        }
+      });
+      
       return {
         company_name: get('s_company_name'),
         client_name: get('s_client_name'),
@@ -1280,13 +1421,17 @@
         client_phone: get('s_client_phone'),
         client_email: get('s_client_email'),
         address: get('s_address'),
-        install_model: get('s_install_model'),
-        model_quantity: get('s_model_quantity'),
-        target_equipment: get('s_target_equipment'),
-        preferred_date_1: get('s_preferred_date_1'),
-        preferred_date_2: get('s_preferred_date_2'),
+        // 동적 제품 (배열)
+        products: products,
+        // 합쳐진 문자열 (시트 저장용)
+        install_model: products.map(p => p.model).filter(Boolean).join(', '),
+        model_quantity: products.map(p => p.qty).filter(Boolean).join(', '),
+        target_equipment: products.map(p => p.target).filter(Boolean).join(', '),
+        preferred_start: get('s_preferred_start'),
+        preferred_end: get('s_preferred_end'),
         site_notes: get('s_site_notes'),
-        call_handler: get('s_call_handler'),
+        company: get('s_company'),
+        installer_name: get('s_installer_name'),
         source: get('s_source'),
         customer_type: customerTypes.s_customer,
         customer_sub_type: customerSubTypes.s_customer,
@@ -1296,37 +1441,93 @@
     
     // ===== 검증 =====
     function validate(type) {
-      const required = type === 'inquiry' ? {
-        i_company_name: '업체명',
-        i_client_name: '담당자 성함',
-        i_client_phone: '연락처',
-        i_address: '현장 주소',
-        i_inquiry: '문의 내용',
-        i_call_handler: '전화 응대자'
-      } : {
-        s_company_name: '업체명',
-        s_client_name: '담당자 성함',
-        s_client_phone: '연락처',
-        s_address: '현장 주소',
-        s_install_model: '설치 모델',
-        s_model_quantity: '모델별 수량',
-        s_target_equipment: '대상 장비 / 대수',
-        s_preferred_date_1: '희망 일정 1순위',
-        s_call_handler: '설치 담당자'
-      };
-      
-      document.querySelectorAll('input, select, textarea').forEach(e => e.classList.remove('error'));
-      
-      for (const [key, label] of Object.entries(required)) {
-        const el = document.querySelector(`[name="${key}"]`);
-        if (!el || !el.value.trim()) {
-          if (el) {
-            el.classList.add('error');
-            el.focus();
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (type === 'inquiry') {
+        const required = {
+          i_company_name: '업체명',
+          i_client_name: '담당자 성함',
+          i_client_phone: '연락처',
+          i_address: '현장 주소',
+          i_inquiry: '문의 내용',
+          i_call_handler: '전화 응대자'
+        };
+        document.querySelectorAll('input, select, textarea').forEach(e => e.classList.remove('error'));
+        for (const [key, label] of Object.entries(required)) {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (!el || !el.value.trim()) {
+            if (el) {
+              el.classList.add('error');
+              el.focus();
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            toast(`${label}을(를) 입력해주세요`, 'error');
+            return false;
           }
-          toast(`${label}을(를) 입력해주세요`, 'error');
+        }
+      } else {
+        // 설치 검증
+        const required = {
+          s_company_name: '업체명',
+          s_client_name: '담당자 성함',
+          s_client_phone: '연락처',
+          s_address: '현장 주소',
+          s_preferred_start: '희망 일정 시작일',
+          s_preferred_end: '희망 일정 종료일'
+        };
+        document.querySelectorAll('input, select, textarea').forEach(e => e.classList.remove('error'));
+        for (const [key, label] of Object.entries(required)) {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (!el || !el.value.trim()) {
+            if (el) {
+              el.classList.add('error');
+              el.focus();
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            toast(`${label}을(를) 입력해주세요`, 'error');
+            return false;
+          }
+        }
+        
+        // 종료일이 시작일보다 빠른지 체크
+        const start = document.querySelector('[name="s_preferred_start"]').value;
+        const end = document.querySelector('[name="s_preferred_end"]').value;
+        if (start && end && start > end) {
+          toast('종료일은 시작일 이후여야 합니다', 'error');
+          document.querySelector('[name="s_preferred_end"]').focus();
           return false;
+        }
+        
+        // 설치 제품 최소 1개
+        const products = [];
+        document.querySelectorAll('.install-product-block').forEach(block => {
+          const model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+          const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
+          const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
+          if (model && qty && target) products.push({ model, qty, target });
+        });
+        if (products.length === 0) {
+          toast('설치 제품을 최소 1개 입력해주세요 (모델/수량/대상장비)', 'error');
+          document.querySelector('.install-product-block')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return false;
+        }
+        
+        // 담당사 선택 필수
+        const company = document.querySelector('[name="s_company"]').value;
+        if (!company) {
+          toast('설치 담당사를 선택해주세요', 'error');
+          document.getElementById('company-pills').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return false;
+        }
+        
+        // 기타 선택 시 이름 필수
+        if (company === '기타') {
+          const installerName = document.querySelector('[name="s_installer_name"]').value.trim();
+          if (!installerName) {
+            toast('"기타" 선택 시 담당자 이름은 필수입니다', 'error');
+            const inputEl = document.querySelector('[name="s_installer_name"]');
+            inputEl.classList.add('error');
+            inputEl.focus();
+            return false;
+          }
         }
       }
       
@@ -1392,17 +1593,16 @@
       m += `- 연락처 : ${d.client_phone}\n`;
       if (d.client_email) m += `- 이메일 : ${d.client_email}\n`;
       m += `- 현장 주소 : ${d.address}\n`;
-      m += `\n■ 설치 제품\n`;
-      m += `- 설치 모델 : ${d.install_model}\n`;
-      m += `- 모델별 수량 : ${d.model_quantity}\n`;
-      m += `- 대상 장비 / 대수 : ${d.target_equipment}\n`;
+      m += `\n■ 설치 제품 (${d.products.length}건)\n`;
+      d.products.forEach((p, i) => {
+        m += `${i+1}) ${p.model} ${p.qty} / ${p.target}\n`;
+      });
       m += `\n■ 일정 및 특이사항\n`;
-      m += `- 희망 일정 1순위 : ${formatDate(d.preferred_date_1)}\n`;
-      if (d.preferred_date_2) m += `- 희망 일정 2순위 : ${formatDate(d.preferred_date_2)}\n`;
+      m += `- 희망 일정 : ${formatDate(d.preferred_start)} ~ ${formatDate(d.preferred_end)}\n`;
       if (d.site_notes) m += `- 현장 특이사항 : ${d.site_notes}\n`;
       m += `\n--------------------\n내부 메모)\n`;
       m += `- 상담 채널 : ${d.source || '-'}\n`;
-      m += `- 설치 담당자 : ${d.call_handler}\n`;
+      m += `- 설치 담당사 : ${d.company}${d.installer_name ? ` (${d.installer_name})` : ''}\n`;
       m += `- 고객 구분 : ${customerLabel(d.customer_type, d.customer_sub_type)}\n`;
       if (d.notes) m += `- 특이사항 : ${d.notes}\n`;
       m += `--------------------\n※ 설치 담당자 배정 요청드립니다.\n📌 ${t}`;
@@ -1564,7 +1764,6 @@
           <div class="load-card-row2">
             <span class="load-card-name">${d.client_name || '-'}</span>
             ${d.client_position ? '<span>· ' + d.client_position + '</span>' : ''}
-            <span class="load-card-company-sub">@ ${d.company_name || '-'}</span>
             <span class="load-card-time">${timeAgo(d.received_at)}</span>
           </div>
         `;
@@ -1655,8 +1854,175 @@
         document.getElementById('load-phone').value = '';
         document.getElementById('load-result').classList.remove('show');
         document.getElementById('load-cards').innerHTML = '';
+        
+        // 설치 제품 블록 초기화 (1개만 남김)
+        document.getElementById('install-products').innerHTML = '';
+        addInstallProduct();
+        
+        // 담당사 선택 해제
+        document.querySelectorAll('#company-pills .company-pill').forEach(p => p.classList.remove('active'));
+        document.getElementById('s_company').value = '';
+        document.getElementById('installer-name-wrap').classList.remove('show', 'required-field');
+        document.getElementById('s_installer_name').value = '';
       }
     }
+    
+    // ===== 동적 설치 제품 블록 =====
+    let productCounter = 0;
+    
+    function createProductBlockHTML(num) {
+      return `
+        <div class="install-product-block" data-product-num="${num}">
+          <div class="install-product-header">
+            <div class="install-product-num">설치 제품 ${num}</div>
+            <button type="button" class="btn-remove-product" title="삭제">×</button>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>설치 모델 <span class="required">*</span></label>
+              <select name="ip_model">
+                <option value="">선택해주세요</option>
+                <option value="AI-S1">AI-S1</option>
+                <option value="AI-S2">AI-S2</option>
+                <option value="AI-S3">AI-S3</option>
+                <option value="AI-S3V">AI-S3V</option>
+                <option value="AI-S3VL">AI-S3VL</option>
+                <option value="AI-S3VD">AI-S3VD (디젤)</option>
+                <option value="미정">미정 (상담 후 결정)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>모델별 수량 <span class="required">*</span></label>
+              <input type="text" name="ip_qty" placeholder="예: 5대" />
+            </div>
+            <div class="field full">
+              <label>대상 장비 / 대수 <span class="required">*</span></label>
+              <input type="text" name="ip_target" placeholder="예: 지게차 5대" />
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function addInstallProduct() {
+      productCounter++;
+      const container = document.getElementById('install-products');
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = createProductBlockHTML(productCounter);
+      const newBlock = wrapper.firstElementChild;
+      container.appendChild(newBlock);
+      
+      // 삭제 버튼 이벤트
+      newBlock.querySelector('.btn-remove-product').onclick = () => {
+        const blocks = document.querySelectorAll('.install-product-block');
+        if (blocks.length === 1) {
+          toast('최소 1개의 설치 제품이 필요합니다', 'error');
+          return;
+        }
+        newBlock.remove();
+        renumberProducts();
+      };
+    }
+    
+    function renumberProducts() {
+      document.querySelectorAll('.install-product-block').forEach((block, i) => {
+        block.querySelector('.install-product-num').textContent = `설치 제품 ${i + 1}`;
+      });
+    }
+    
+    // 초기 1개 블록 생성
+    addInstallProduct();
+    
+    // 추가 버튼
+    document.getElementById('btn-add-product').onclick = addInstallProduct;
+    
+    // ===== 담당사 선택 =====
+    document.querySelectorAll('#company-pills .company-pill').forEach(pill => {
+      pill.onclick = () => {
+        document.querySelectorAll('#company-pills .company-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        
+        const company = pill.dataset.company;
+        document.getElementById('s_company').value = company;
+        
+        const wrap = document.getElementById('installer-name-wrap');
+        const hint = document.getElementById('installer-name-hint');
+        const input = document.getElementById('s_installer_name');
+        
+        wrap.classList.add('show');
+        
+        if (company === '기타') {
+          // 기타 → 필수
+          wrap.classList.add('required-field');
+          input.placeholder = '담당자 이름 입력 (필수)';
+          hint.textContent = '"기타" 선택 시 담당자 이름은 필수입니다';
+          hint.classList.add('required-hint');
+        } else {
+          // 그 외 → 선택사항이지만 강하게 유도
+          wrap.classList.remove('required-field');
+          input.placeholder = `${company} 담당자 이름`;
+          hint.textContent = `${company}의 담당자 이름을 입력하세요 (선택이지만 추적을 위해 권장)`;
+          hint.classList.remove('required-hint');
+        }
+        input.classList.remove('error');
+      };
+    });
+    
+    // ===== URL 파라미터 자동 입력 (문의 → 설치 자동 연결) =====
+    function applyUrlPrefill() {
+      const params = new URLSearchParams(window.location.search);
+      const prefill = params.get('prefill');
+      
+      if (prefill !== 'install') return;
+      
+      // 설치 탭으로 자동 전환
+      document.querySelector('[data-tab="install"]')?.click();
+      
+      // 데이터 자동 입력
+      const fillIfExists = (name, value) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el && value) {
+          el.value = decodeURIComponent(value);
+          el.classList.add('autofilled');
+          setTimeout(() => el.classList.remove('autofilled'), 2000);
+        }
+      };
+      
+      fillIfExists('s_company_name', params.get('company_name'));
+      fillIfExists('s_client_name', params.get('client_name'));
+      fillIfExists('s_client_position', params.get('client_position'));
+      fillIfExists('s_client_phone', params.get('client_phone'));
+      fillIfExists('s_client_email', params.get('client_email'));
+      fillIfExists('s_address', params.get('address'));
+      
+      // 고객 구분 (기존 고객으로 자동 설정)
+      const customerType = params.get('customer_type');
+      const customerSubType = params.get('customer_sub_type');
+      
+      if (customerType === 'existing') {
+        customerTypes.s_customer = 'existing';
+        document.querySelectorAll('[data-toggle="s_customer"] .customer-toggle-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.type === 'existing');
+        });
+        const sSubEl = document.querySelector('[data-existing-sub="s"]');
+        sSubEl?.classList.add('show');
+        
+        if (customerSubType) {
+          customerSubTypes.s_customer = customerSubType;
+          sSubEl?.querySelectorAll('.existing-sub-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.value === customerSubType);
+          });
+        }
+      }
+      
+      // 안내 토스트
+      setTimeout(() => {
+        toast('문의 정보를 자동으로 불러왔어요. 설치 정보만 추가 입력하세요', 'success');
+      }, 500);
+    }
+    
+    // 페이지 로드 후 URL 파라미터 처리
+    applyUrlPrefill();
     
     // ===== 이벤트 - 전송 버튼 =====
     document.getElementById('send-btn-inquiry').onclick = () => {
