@@ -1406,7 +1406,11 @@
       // 동적 설치 제품 블록 수집
       const products = [];
       document.querySelectorAll('.install-product-block').forEach(block => {
-        const model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+        let model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+        // "직접 입력" 선택한 경우 → 커스텀 텍스트 값 사용
+        if (model === '__direct__') {
+          model = block.querySelector('[name="ip_model_custom"]')?.value.trim() || '';
+        }
         const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
         const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
         if (model || qty || target) {
@@ -1498,12 +1502,23 @@
         
         // 설치 제품 최소 1개
         const products = [];
+        let hasDirectEmpty = false;
         document.querySelectorAll('.install-product-block').forEach(block => {
-          const model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+          let model = block.querySelector('[name="ip_model"]')?.value.trim() || '';
+          if (model === '__direct__') {
+            const customVal = block.querySelector('[name="ip_model_custom"]')?.value.trim() || '';
+            if (!customVal) hasDirectEmpty = true;
+            model = customVal;
+          }
           const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
           const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
           if (model && qty && target) products.push({ model, qty, target });
         });
+        if (hasDirectEmpty) {
+          toast('"직접 입력" 선택 시 모델명을 입력해주세요', 'error');
+          document.querySelector('[name="ip_model_custom"]:not([style*="none"])')?.focus();
+          return false;
+        }
         if (products.length === 0) {
           toast('설치 제품을 최소 1개 입력해주세요 (모델/수량/대상장비)', 'error');
           document.querySelector('.install-product-block')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1598,7 +1613,8 @@
         m += `${i+1}) ${p.model} ${p.qty} / ${p.target}\n`;
       });
       m += `\n■ 일정 및 특이사항\n`;
-      m += `- 희망 일정 : ${formatDate(d.preferred_start)} ~ ${formatDate(d.preferred_end)}\n`;
+      m += `- 희망 일정 시작일 : ${formatDate(d.preferred_start)}\n`;
+      m += `- 희망 일정 종료일 : ${formatDate(d.preferred_end)}\n`;
       if (d.site_notes) m += `- 현장 특이사항 : ${d.site_notes}\n`;
       m += `\n--------------------\n내부 메모)\n`;
       m += `- 상담 채널 : ${d.source || '-'}\n`;
@@ -1890,7 +1906,9 @@
                 <option value="AI-S3VL">AI-S3VL</option>
                 <option value="AI-S3VD">AI-S3VD (디젤)</option>
                 <option value="미정">미정 (상담 후 결정)</option>
+                <option value="__direct__">📝 직접 입력</option>
               </select>
+              <input type="text" name="ip_model_custom" placeholder="모델명 직접 입력" style="display:none; margin-top:8px;" />
             </div>
             <div class="field">
               <label>모델별 수량 <span class="required">*</span></label>
@@ -1922,6 +1940,19 @@
         }
         newBlock.remove();
         renumberProducts();
+      };
+      
+      // 모델 선택: "직접 입력" 선택 시 텍스트 칸 표시
+      const modelSelect = newBlock.querySelector('[name="ip_model"]');
+      const modelCustomInput = newBlock.querySelector('[name="ip_model_custom"]');
+      modelSelect.onchange = () => {
+        if (modelSelect.value === '__direct__') {
+          modelCustomInput.style.display = 'block';
+          modelCustomInput.focus();
+        } else {
+          modelCustomInput.style.display = 'none';
+          modelCustomInput.value = '';
+        }
       };
     }
     
