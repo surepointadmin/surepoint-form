@@ -529,6 +529,56 @@
       font-weight: 600;
     }
     
+    /* 다중 담당사 이름 입력 row */
+    .installer-name-row {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--gray-50);
+      border-radius: 10px;
+      border-left: 3px solid var(--primary);
+      animation: slideDown 0.25s ease;
+    }
+    
+    .installer-row-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    
+    .installer-name-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+    
+    .installer-name-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(43, 92, 230, 0.1);
+    }
+    
+    .installer-name-input.required-field {
+      border-color: var(--orange);
+      background: #fffaf0;
+    }
+    
+    .installer-row-hint {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--gray-500);
+    }
+    
+    .installer-row-hint.required-hint {
+      color: var(--orange);
+      font-weight: 600;
+    }
+    
     /* 과거 접수 내역 버튼 */
     .sheet-link-section {
       margin-top: 16px;
@@ -1491,7 +1541,7 @@
             </div>
             <div class="form-grid single">
               <div class="field">
-                <label>설치 담당사 <span class="required">*</span></label>
+                <label>설치 담당사 <span class="required">*</span> <span style="font-size:11px;color:var(--gray-500);font-weight:500">(여러 회사 선택 가능)</span></label>
                 <div class="company-pills" id="company-pills">
                   <button type="button" class="company-pill" data-company="슈어">슈어</button>
                   <button type="button" class="company-pill" data-company="유신">유신</button>
@@ -1501,10 +1551,8 @@
                   <button type="button" class="company-pill" data-company="기타">기타</button>
                 </div>
                 <input type="hidden" name="s_company" id="s_company" />
-                <div class="installer-name-wrap" id="installer-name-wrap">
-                  <input type="text" name="s_installer_name" id="s_installer_name" placeholder="담당자 이름 입력" />
-                  <div class="installer-name-hint" id="installer-name-hint">선택 사항이지만 입력하시면 추적이 정확합니다</div>
-                </div>
+                <input type="hidden" name="s_installer_name" id="s_installer_name" />
+                <div id="installer-names-wrap"></div>
               </div>
               <div class="field">
                 <label>상담 채널</label>
@@ -1691,10 +1739,9 @@
         if (model === '__direct__') {
           model = block.querySelector('[name="ip_model_custom"]')?.value.trim() || '';
         }
-        const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
         const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
-        if (model || qty || target) {
-          products.push({ model, qty, target });
+        if (model || target) {
+          products.push({ model, target });
         }
       });
       
@@ -1709,7 +1756,6 @@
         products: products,
         // 합쳐진 문자열 (시트 저장용)
         install_model: products.map(p => p.model).filter(Boolean).join(', '),
-        model_quantity: products.map(p => p.qty).filter(Boolean).join(', '),
         target_equipment: products.map(p => p.target).filter(Boolean).join(', '),
         preferred_start: get('s_preferred_start'),
         preferred_end: get('s_preferred_end'),
@@ -1790,9 +1836,8 @@
             if (!customVal) hasDirectEmpty = true;
             model = customVal;
           }
-          const qty = block.querySelector('[name="ip_qty"]')?.value.trim() || '';
           const target = block.querySelector('[name="ip_target"]')?.value.trim() || '';
-          if (model && qty && target) products.push({ model, qty, target });
+          if (model && target) products.push({ model, target });
         });
         if (hasDirectEmpty) {
           toast('"직접 입력" 선택 시 모델명을 입력해주세요', 'error');
@@ -1800,28 +1845,32 @@
           return false;
         }
         if (products.length === 0) {
-          toast('설치 제품을 최소 1개 입력해주세요 (모델/수량/대상장비)', 'error');
+          toast('설치 제품을 최소 1개 입력해주세요 (모델/대상장비)', 'error');
           document.querySelector('.install-product-block')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return false;
         }
         
-        // 담당사 선택 필수
+        // 담당사 선택 필수 (1개 이상)
         const company = document.querySelector('[name="s_company"]').value;
         if (!company) {
-          toast('설치 담당사를 선택해주세요', 'error');
+          toast('설치 담당사를 선택해주세요 (1개 이상)', 'error');
           document.getElementById('company-pills').scrollIntoView({ behavior: 'smooth', block: 'center' });
           return false;
         }
         
-        // 기타 선택 시 이름 필수
-        if (company === '기타') {
-          const installerName = document.querySelector('[name="s_installer_name"]').value.trim();
-          if (!installerName) {
-            toast('"기타" 선택 시 담당자 이름은 필수입니다', 'error');
-            const inputEl = document.querySelector('[name="s_installer_name"]');
-            inputEl.classList.add('error');
-            inputEl.focus();
-            return false;
+        // 회사별 이름 입력칸 검증 - 기타가 포함되면 기타 이름 필수
+        const installerRows = document.querySelectorAll('#installer-names-wrap .installer-name-row');
+        for (const row of installerRows) {
+          const rowCompany = row.dataset.company;
+          if (rowCompany === '기타') {
+            const nameInput = row.querySelector('input');
+            const name = nameInput.value.trim();
+            if (!name) {
+              toast('"기타" 선택 시 담당자 이름은 필수입니다', 'error');
+              nameInput.classList.add('error');
+              nameInput.focus();
+              return false;
+            }
           }
         }
       }
@@ -1890,7 +1939,7 @@
       m += `- 현장 주소 : ${d.address}\n`;
       m += `\n■ 설치 제품 (${d.products.length}건)\n`;
       d.products.forEach((p, i) => {
-        m += `${i+1}) ${p.model} ${p.qty} / ${p.target}\n`;
+        m += `${i+1}) ${p.model} / ${p.target}\n`;
       });
       m += `\n■ 일정 및 특이사항\n`;
       m += `- 희망 일정 시작일 : ${formatDate(d.preferred_start)}\n`;
@@ -1898,7 +1947,7 @@
       if (d.site_notes) m += `- 현장 특이사항 : ${d.site_notes}\n`;
       m += `\n--------------------\n내부 메모)\n`;
       m += `- 상담 채널 : ${d.source || '-'}\n`;
-      m += `- 설치 담당사 : ${d.company}${d.installer_name ? ` (${d.installer_name})` : ''}\n`;
+      m += `- 설치 담당사 : ${d.company}${d.installer_name ? `\n- 담당자 : ${d.installer_name}` : ''}\n`;
       m += `- 고객 구분 : ${customerLabel(d.customer_type, d.customer_sub_type)}\n`;
       if (d.notes) m += `- 특이사항 : ${d.notes}\n`;
       m += `--------------------\n※ 설치 담당자 배정 요청드립니다.\n📌 ${t}`;
@@ -2155,11 +2204,11 @@
         document.getElementById('install-products').innerHTML = '';
         addInstallProduct();
         
-        // 담당사 선택 해제
+        // 담당사 선택 해제 (다중)
         document.querySelectorAll('#company-pills .company-pill').forEach(p => p.classList.remove('active'));
         document.getElementById('s_company').value = '';
-        document.getElementById('installer-name-wrap').classList.remove('show', 'required-field');
         document.getElementById('s_installer_name').value = '';
+        document.getElementById('installer-names-wrap').innerHTML = '';
       }
     }
     
@@ -2174,7 +2223,7 @@
             <button type="button" class="btn-remove-product" title="삭제">×</button>
           </div>
           <div class="form-grid">
-            <div class="field">
+            <div class="field full">
               <label>설치 모델 <span class="required">*</span></label>
               <select name="ip_model">
                 <option value="">선택해주세요</option>
@@ -2189,10 +2238,6 @@
                 <option value="__direct__">📝 직접 입력</option>
               </select>
               <input type="text" name="ip_model_custom" placeholder="모델명 직접 입력" style="display:none; margin-top:8px;" />
-            </div>
-            <div class="field">
-              <label>모델별 수량 <span class="required">*</span></label>
-              <input type="text" name="ip_qty" placeholder="예: 5대" />
             </div>
             <div class="field full">
               <label>대상 장비 / 대수 <span class="required">*</span></label>
@@ -2248,35 +2293,81 @@
     // 추가 버튼
     document.getElementById('btn-add-product').onclick = addInstallProduct;
     
-    // ===== 담당사 선택 =====
+    // ===== 담당사 선택 (다중) =====
+    function updateCompanyState() {
+      const selectedPills = document.querySelectorAll('#company-pills .company-pill.active');
+      const companies = Array.from(selectedPills).map(p => p.dataset.company);
+      
+      // hidden input에 콤마로 합쳐서 저장
+      document.getElementById('s_company').value = companies.join(', ');
+      
+      const wrap = document.getElementById('installer-names-wrap');
+      
+      // 현재 입력된 이름들 보존
+      const existingInputs = {};
+      wrap.querySelectorAll('.installer-name-row').forEach(row => {
+        const company = row.dataset.company;
+        const input = row.querySelector('input');
+        if (input) existingInputs[company] = input.value;
+      });
+      
+      // 영역 재구성
+      wrap.innerHTML = '';
+      
+      if (companies.length === 0) {
+        document.getElementById('s_installer_name').value = '';
+        return;
+      }
+      
+      companies.forEach(company => {
+        const row = document.createElement('div');
+        row.className = 'installer-name-row';
+        row.dataset.company = company;
+        
+        const isRequired = company === '기타';
+        const placeholder = isRequired 
+          ? `${company} 담당자 이름 (필수)` 
+          : `${company} 담당자 이름 (여러 명은 콤마로)`;
+        const hint = isRequired 
+          ? `"기타" 선택 시 담당자 이름은 필수입니다` 
+          : `${company} 담당자 이름을 입력하세요 (여러 명일 경우 콤마로 구분)`;
+        
+        row.innerHTML = `
+          <label class="installer-row-label">
+            ${company} 담당자 이름${isRequired ? ' <span style="color:var(--red)">*</span>' : ''}
+          </label>
+          <input type="text" 
+                 class="installer-name-input${isRequired ? ' required-field' : ''}" 
+                 data-company-name="${company}" 
+                 placeholder="${placeholder}" 
+                 value="${existingInputs[company] || ''}" />
+          <div class="installer-row-hint${isRequired ? ' required-hint' : ''}">${hint}</div>
+        `;
+        
+        wrap.appendChild(row);
+        
+        // 입력 시마다 hidden s_installer_name 업데이트
+        row.querySelector('input').addEventListener('input', updateInstallerNames);
+      });
+      
+      updateInstallerNames();
+    }
+    
+    function updateInstallerNames() {
+      const parts = [];
+      document.querySelectorAll('#installer-names-wrap .installer-name-row').forEach(row => {
+        const company = row.dataset.company;
+        const name = row.querySelector('input').value.trim();
+        if (name) parts.push(`${company}: ${name}`);
+      });
+      document.getElementById('s_installer_name').value = parts.join(' / ');
+    }
+    
     document.querySelectorAll('#company-pills .company-pill').forEach(pill => {
       pill.onclick = () => {
-        document.querySelectorAll('#company-pills .company-pill').forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        
-        const company = pill.dataset.company;
-        document.getElementById('s_company').value = company;
-        
-        const wrap = document.getElementById('installer-name-wrap');
-        const hint = document.getElementById('installer-name-hint');
-        const input = document.getElementById('s_installer_name');
-        
-        wrap.classList.add('show');
-        
-        if (company === '기타') {
-          // 기타 → 필수
-          wrap.classList.add('required-field');
-          input.placeholder = '담당자 이름 입력 (필수)';
-          hint.textContent = '"기타" 선택 시 담당자 이름은 필수입니다';
-          hint.classList.add('required-hint');
-        } else {
-          // 그 외 → 선택사항이지만 강하게 유도
-          wrap.classList.remove('required-field');
-          input.placeholder = `${company} 담당자 이름`;
-          hint.textContent = `${company}의 담당자 이름을 입력하세요 (선택이지만 추적을 위해 권장)`;
-          hint.classList.remove('required-hint');
-        }
-        input.classList.remove('error');
+        // toggle
+        pill.classList.toggle('active');
+        updateCompanyState();
       };
     });
     
