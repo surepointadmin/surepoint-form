@@ -1516,6 +1516,12 @@
       margin: -7.5px 0 0 -7.5px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
       border-radius: 50%; animation: spin 0.8s linear infinite;
     }
+    .assign-memo {
+      width: 100%; margin-top: 8px; padding: 10px 12px; font-size: 14px;
+      border: 1px solid var(--gray-200); border-radius: 9px; background: #fff;
+      font-family: inherit; resize: vertical; min-height: 44px;
+    }
+    .assign-memo:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .assign-cur { font-size: 12px; margin-top: 8px; color: var(--gray-600); }
     .assign-cur.none { color: var(--gray-400); }
 
@@ -3400,6 +3406,7 @@
             <input type="text" id="assign-name" list="assignee-list" placeholder="담당자 이름 선택 또는 입력" value="${esc(cur)}" />
             <button type="button" class="btn-assign" id="assign-btn">${cur ? '변경' : '배정'}</button>
           </div>
+          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="배정 메모 (선택) — 잔디 알림에 함께 전송돼요"></textarea>
           <div class="assign-cur${cur ? '' : ' none'}">${cur ? `현재 배정: <b>${esc(cur)}</b>` : '아직 배정 안 됨'}</div>
         `;
         document.getElementById('assign-btn').onclick = doAssign;
@@ -3422,6 +3429,7 @@
       const btn = document.getElementById('assign-btn');
       const id = recordId(currentDetail);
       const r = currentDetail;
+      const assignMemo = (document.getElementById('assign-memo')?.value || '').trim();
 
       btn.classList.add('loading'); btn.disabled = true;
       try {
@@ -3442,7 +3450,8 @@
             client_email: r.client_email || '',
             address: r.address || '',
             inflow: r.inflow || '',
-            inquiry: r.inquiry || ''
+            inquiry: r.inquiry || '',
+            assign_memo: assignMemo
           })
         }, CONFIG.timeout);
         if (!res.ok) throw new Error('서버 응답 ' + res.status);
