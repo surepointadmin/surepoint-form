@@ -3434,11 +3434,13 @@
             id, row: id,
             assignee: name,
             status: '배정완료',
-            // 잔디 알림 메시지용 정보
+            // 잔디 알림 + 영업툴 딜 생성용 정보
             company_name: r.company_name || '',
             client_name: r.client_name || '',
             client_position: r.client_position || '',
             client_phone: r.client_phone || '',
+            client_email: r.client_email || '',
+            address: r.address || '',
             inquiry: r.inquiry || ''
           })
         }, CONFIG.timeout);
