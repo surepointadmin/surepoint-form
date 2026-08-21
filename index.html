@@ -3261,8 +3261,13 @@
       };
       const passSearch = r => !q || [r.company_name, r.client_name, r.client_phone, r.client_position]
         .filter(Boolean).some(v => String(v).toLowerCase().includes(q));
+      // 삭제된 건(진행상태='삭제됨') 숨김 — 서버가 안 걸러주는 검색 결과까지 커버
+      const notDeleted = r => {
+        const st = String(r.status || r['진행상태'] || r.progress || '').trim();
+        return !st.includes('삭제');
+      };
 
-      const base = historyRecords.filter(r => passTime(r) && passSearch(r));
+      const base = historyRecords.filter(r => passTime(r) && passSearch(r) && notDeleted(r));
 
       // 서브탭 건수 배지 갱신
       const inqCount = base.filter(r => recType(r) === 'inquiry').length;
@@ -3527,7 +3532,9 @@
     }
 
     function recordId(r) {
-      return r.id ?? r.row ?? r.row_number ?? r.rowNumber ?? r._row ?? r.record_id ?? '';
+      // 삭제/수정/배정은 시트의 '접수일시'로 행을 찾으므로, 접수일시(=received_at)를 우선 사용.
+      // (검색으로 불러온 건과 전체목록으로 불러온 건의 id 형태가 달라도 안전하게 매칭)
+      return r.received_at || r.created_at || r.timestamp || r.id || r.row || r.row_number || r.rowNumber || r._row || r.record_id || '';
     }
 
     // 수정 모드 진입
