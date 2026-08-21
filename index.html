@@ -2963,11 +2963,63 @@
       };
     });
     
+    // ===== 잔디 배정 링크로 진입 → 해당 문의 자동 검색 + 상세 팝업 =====
+    async function openAssignFromLink(phone) {
+      const digits = s => String(s || '').replace(/[^0-9]/g, '');
+      const target = digits(phone);
+
+      // 접수 내역 탭으로 전환 (자동 loadHistory 재정의 방지)
+      historyLoaded = true;
+      historyType = 'inquiry';       // 문의 서브탭
+      historyAssign = 'unassigned';  // 미배정 먼저
+      historyTime = 'all';
+      const histBtn = document.querySelector('.tab-btn[data-tab="history"]');
+      if (histBtn) histBtn.click();
+
+      // 검색창에 전화번호 넣고 서버 검색
+      // 서브탭/필터 UI 활성 상태도 맞춰줌
+      document.querySelectorAll('#history-subtabs .sub-tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.type === 'inquiry'));
+      document.querySelectorAll('#history-timefilters .chip').forEach(c =>
+        c.classList.toggle('active', c.dataset.time === 'all'));
+
+      const q = document.getElementById('history-query');
+      if (q) q.value = phone;
+      await searchHistory();
+
+      // 전화번호가 일치하는 문의 건 찾아서 상세 팝업 열기
+      const rec = (historyRecords || []).find(r =>
+        recType(r) === 'inquiry' && digits(r.client_phone) === target
+      ) || (historyRecords || []).find(r => digits(r.client_phone) === target);
+
+      if (rec) {
+        // 배정 상태에 맞는 서브탭으로 맞춰줌 (배정완료면 '배정' 탭)
+        historyAssign = isAssigned(rec) ? 'assigned' : 'unassigned';
+        document.querySelectorAll('#history-assigntabs .assign-tab').forEach(b => {
+          b.classList.toggle('active', b.dataset.assign === historyAssign);
+        });
+        renderHistory(true);
+        setTimeout(() => openDetail(rec), 200);
+      } else {
+        toast('해당 전화번호의 문의를 찾지 못했어요. 검색 결과에서 직접 선택하세요', 'error');
+      }
+    }
+
     // ===== URL 파라미터 자동 입력 (문의 → 설치 자동 연결) =====
     function applyUrlPrefill() {
       const params = new URLSearchParams(window.location.search);
+
+      // ① 잔디 "담당자 배정하기" 링크로 들어온 경우 (?phone=010-xxxx-xxxx)
+      //    → 접수 내역 탭으로 이동 + 해당 문의 자동 검색 + 상세 팝업 열기
+      const phoneParam = params.get('phone');
+      if (phoneParam) {
+        // 스크립트 초기화(let 변수들) 이후에 실행되도록 지연
+        setTimeout(() => openAssignFromLink(decodeURIComponent(phoneParam)), 0);
+        return;
+      }
+
       const prefill = params.get('prefill');
-      
+
       if (prefill !== 'install') return;
       
       // 설치 탭으로 자동 전환
