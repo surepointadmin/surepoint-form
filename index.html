@@ -1524,12 +1524,32 @@
     .assign-memo:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .assign-cur { font-size: 12px; margin-top: 8px; color: var(--gray-600); }
     .assign-cur.none { color: var(--gray-400); }
-    .assign-memo-saved {
-      margin-top: 8px; padding: 10px 12px; background: #fffaf0;
-      border: 1px solid rgba(245,158,11,.3); border-radius: 9px;
-      font-size: 13px; color: var(--gray-800); line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+    /* 배정 메모 캐러셀 (인스타 게시물 스타일) */
+    .memo-carousel {
+      margin-top: 8px; padding: 12px; background: #fffaf0;
+      border: 1px solid rgba(245,158,11,.3); border-radius: 10px;
     }
-    .assign-memo-saved b { display: block; font-size: 11px; font-weight: 700; color: #b45309; margin-bottom: 4px; }
+    .memo-carousel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .memo-carousel-head b { font-size: 11px; font-weight: 700; color: #b45309; }
+    .memo-count { font-size: 11px; font-weight: 700; color: #b45309; opacity: .85; }
+    .memo-carousel-view { position: relative; display: flex; align-items: center; }
+    .memo-slide {
+      flex: 1; min-height: 44px; padding: 4px 32px; font-size: 13px; color: var(--gray-800);
+      line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+    }
+    .memo-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(0,0,0,.32); color: #fff; font-size: 18px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(2px); transition: background .15s ease; z-index: 2;
+    }
+    .memo-nav:hover { background: rgba(0,0,0,.5); }
+    .memo-nav.prev { left: -2px; }
+    .memo-nav.next { right: -2px; }
+    .memo-dots { display: flex; gap: 5px; justify-content: center; margin-top: 8px; }
+    .memo-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(180,83,9,.28); cursor: pointer; transition: all .15s ease; }
+    .memo-dot.active { background: #b45309; transform: scale(1.25); }
 
     .filter-chips {
       display: flex;
@@ -3435,6 +3455,12 @@
       </div>`;
     }
 
+    // 배정 메모 여러 개 저장 규칙: 구분선으로 이어 붙임(최신이 맨 앞)
+    const MEMO_SEP = '\n═══════════\n';
+    function parseMemos(raw) {
+      return String(raw || '').split(/═{3,}/).map(s => s.trim()).filter(Boolean);
+    }
+
     function openDetail(r) {
       currentDetail = r;
       const type = recType(r);
@@ -3462,7 +3488,7 @@
       const assignBox = document.getElementById('detail-assign');
       if (type === 'inquiry') {
         const cur = r.assignee ? String(r.assignee).trim() : '';
-        const memo = r.assign_memo ? String(r.assign_memo).trim() : '';
+        const memos = parseMemos(r.assign_memo);
         assignBox.style.display = 'block';
         assignBox.innerHTML = `
           <div class="assign-box-label">👤 담당자 배정</div>
@@ -3470,11 +3496,36 @@
             <input type="text" id="assign-name" list="assignee-list" placeholder="담당자 이름 선택 또는 입력" value="${esc(cur)}" />
             <button type="button" class="btn-assign" id="assign-btn">${cur ? '변경' : '배정'}</button>
           </div>
-          ${memo ? `<div class="assign-memo-saved"><b>📝 저장된 배정 메모</b>${esc(memo)}</div>` : ''}
-          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="${memo ? '메모 수정·추가 시 입력 (비워두면 기존 메모 유지)' : '배정 메모 (선택) — 잔디 알림에 함께 전송돼요'}"></textarea>
+          ${memos.length ? `
+          <div class="memo-carousel">
+            <div class="memo-carousel-head"><b>📝 배정 메모</b>${memos.length > 1 ? `<span class="memo-count"><span id="memo-idx">1</span>/${memos.length}</span>` : ''}</div>
+            <div class="memo-carousel-view">
+              ${memos.length > 1 ? `<button type="button" class="memo-nav prev" id="memo-prev" aria-label="이전 메모">‹</button>` : ''}
+              <div class="memo-slide" id="memo-slide">${esc(memos[0])}</div>
+              ${memos.length > 1 ? `<button type="button" class="memo-nav next" id="memo-next" aria-label="다음 메모">›</button>` : ''}
+            </div>
+            ${memos.length > 1 ? `<div class="memo-dots" id="memo-dots">${memos.map((_, i) => `<span class="memo-dot${i === 0 ? ' active' : ''}" data-i="${i}"></span>`).join('')}</div>` : ''}
+          </div>` : ''}
+          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="${memos.length ? '메모 추가 시 입력 (새 메모가 맨 앞에 추가돼요)' : '배정 메모 (선택) — 잔디 알림에 함께 전송돼요'}"></textarea>
           <div class="assign-cur${cur ? '' : ' none'}">${cur ? `현재 배정: <b>${esc(cur)}</b>` : '아직 배정 안 됨'}</div>
         `;
         document.getElementById('assign-btn').onclick = doAssign;
+        // 메모 캐러셀 넘기기 (최신이 맨 앞, 1/N 표시)
+        if (memos.length > 1) {
+          let mi = 0;
+          const slide = document.getElementById('memo-slide');
+          const idxEl = document.getElementById('memo-idx');
+          const dots = Array.from(document.querySelectorAll('#memo-dots .memo-dot'));
+          const show = n => {
+            mi = (n + memos.length) % memos.length;
+            slide.textContent = memos[mi];
+            if (idxEl) idxEl.textContent = String(mi + 1);
+            dots.forEach((d, i) => d.classList.toggle('active', i === mi));
+          };
+          document.getElementById('memo-prev').onclick = () => show(mi - 1);
+          document.getElementById('memo-next').onclick = () => show(mi + 1);
+          dots.forEach(d => { d.onclick = () => show(parseInt(d.dataset.i, 10)); });
+        }
       } else {
         assignBox.style.display = 'none';
         assignBox.innerHTML = '';
@@ -3494,9 +3545,10 @@
       const btn = document.getElementById('assign-btn');
       const id = recordId(currentDetail);
       const r = currentDetail;
-      // 입력칸이 비어 있으면 기존 메모를 유지(덮어쓰기 방지), 입력하면 새 메모로 교체
+      // 새 메모 입력 시 → 기존 메모 앞에 추가(최신이 맨 앞). 비워두면 기존 메모 유지.
       const memoTyped = (document.getElementById('assign-memo')?.value || '').trim();
-      const assignMemo = memoTyped || (currentDetail.assign_memo || '');
+      const prevMemo = String(currentDetail.assign_memo || '').trim();
+      const assignMemo = memoTyped ? (prevMemo ? (memoTyped + MEMO_SEP + prevMemo) : memoTyped) : prevMemo;
 
       btn.classList.add('loading'); btn.disabled = true;
       try {
