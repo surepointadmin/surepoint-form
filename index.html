@@ -1524,6 +1524,12 @@
     .assign-memo:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .assign-cur { font-size: 12px; margin-top: 8px; color: var(--gray-600); }
     .assign-cur.none { color: var(--gray-400); }
+    .assign-memo-saved {
+      margin-top: 8px; padding: 10px 12px; background: #fffaf0;
+      border: 1px solid rgba(245,158,11,.3); border-radius: 9px;
+      font-size: 13px; color: var(--gray-800); line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+    }
+    .assign-memo-saved b { display: block; font-size: 11px; font-weight: 700; color: #b45309; margin-bottom: 4px; }
 
     .filter-chips {
       display: flex;
@@ -3456,6 +3462,7 @@
       const assignBox = document.getElementById('detail-assign');
       if (type === 'inquiry') {
         const cur = r.assignee ? String(r.assignee).trim() : '';
+        const memo = r.assign_memo ? String(r.assign_memo).trim() : '';
         assignBox.style.display = 'block';
         assignBox.innerHTML = `
           <div class="assign-box-label">👤 담당자 배정</div>
@@ -3463,7 +3470,8 @@
             <input type="text" id="assign-name" list="assignee-list" placeholder="담당자 이름 선택 또는 입력" value="${esc(cur)}" />
             <button type="button" class="btn-assign" id="assign-btn">${cur ? '변경' : '배정'}</button>
           </div>
-          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="배정 메모 (선택) — 잔디 알림에 함께 전송돼요"></textarea>
+          ${memo ? `<div class="assign-memo-saved"><b>📝 저장된 배정 메모</b>${esc(memo)}</div>` : ''}
+          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="${memo ? '메모 수정·추가 시 입력 (비워두면 기존 메모 유지)' : '배정 메모 (선택) — 잔디 알림에 함께 전송돼요'}"></textarea>
           <div class="assign-cur${cur ? '' : ' none'}">${cur ? `현재 배정: <b>${esc(cur)}</b>` : '아직 배정 안 됨'}</div>
         `;
         document.getElementById('assign-btn').onclick = doAssign;
@@ -3486,7 +3494,9 @@
       const btn = document.getElementById('assign-btn');
       const id = recordId(currentDetail);
       const r = currentDetail;
-      const assignMemo = (document.getElementById('assign-memo')?.value || '').trim();
+      // 입력칸이 비어 있으면 기존 메모를 유지(덮어쓰기 방지), 입력하면 새 메모로 교체
+      const memoTyped = (document.getElementById('assign-memo')?.value || '').trim();
+      const assignMemo = memoTyped || (currentDetail.assign_memo || '');
 
       btn.classList.add('loading'); btn.disabled = true;
       try {
