@@ -1534,9 +1534,9 @@
     .memo-count { font-size: 11px; font-weight: 700; color: #b45309; opacity: .85; }
     .memo-carousel-view { position: relative; display: flex; align-items: center; }
     .memo-slide {
-      flex: 1; min-height: 44px; padding: 4px 32px; font-size: 13px; color: var(--gray-800);
-      line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+      flex: 1; min-height: 40px; padding: 4px 32px; font-size: 13px; color: var(--gray-800); line-height: 1.55;
     }
+    .memo-body { white-space: pre-wrap; word-break: break-word; }
     .memo-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
       width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer;
@@ -1550,6 +1550,12 @@
     .memo-dots { display: flex; gap: 5px; justify-content: center; margin-top: 8px; }
     .memo-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(180,83,9,.28); cursor: pointer; transition: all .15s ease; }
     .memo-dot.active { background: #b45309; transform: scale(1.25); }
+    .memo-date { font-size: 11px; font-weight: 600; color: var(--gray-500); margin-bottom: 4px; }
+    .memo-date:empty { display: none; }
+    .memo-add-row { margin-top: 8px; align-items: flex-start; }
+    .memo-add-row .assign-memo { margin-top: 0; }
+    .btn-memo { background: var(--gray-100); color: var(--gray-800); }
+    .btn-memo:hover { background: var(--gray-200); }
 
     .filter-chips {
       display: flex;
@@ -3460,6 +3466,17 @@
     function parseMemos(raw) {
       return String(raw || '').split(/═{3,}/).map(s => s.trim()).filter(Boolean);
     }
+    // 메모 저장 시각 (YYYY-MM-DD HH:mm)
+    function nowStamp() {
+      const d = new Date(); const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+    // 한 메모 항목을 날짜/본문으로 분리 (첫 줄이 날짜형식이면 날짜로 인식)
+    function splitMemoEntry(entry) {
+      const m = String(entry || '').match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\n([\s\S]*)$/);
+      if (m) return { date: m[1], body: m[2].trim() };
+      return { date: '', body: String(entry || '').trim() };
+    }
 
     function openDetail(r) {
       currentDetail = r;
@@ -3489,6 +3506,7 @@
       if (type === 'inquiry') {
         const cur = r.assignee ? String(r.assignee).trim() : '';
         const memos = parseMemos(r.assign_memo);
+        const first = memos.length ? splitMemoEntry(memos[0]) : { date: '', body: '' };
         assignBox.style.display = 'block';
         assignBox.innerHTML = `
           <div class="assign-box-label">👤 담당자 배정</div>
@@ -3496,29 +3514,39 @@
             <input type="text" id="assign-name" list="assignee-list" placeholder="담당자 이름 선택 또는 입력" value="${esc(cur)}" />
             <button type="button" class="btn-assign" id="assign-btn">${cur ? '변경' : '배정'}</button>
           </div>
+          <div class="assign-cur${cur ? '' : ' none'}">${cur ? `현재 배정: <b>${esc(cur)}</b>` : '아직 배정 안 됨'}</div>
           ${memos.length ? `
           <div class="memo-carousel">
             <div class="memo-carousel-head"><b>📝 배정 메모</b>${memos.length > 1 ? `<span class="memo-count"><span id="memo-idx">1</span>/${memos.length}</span>` : ''}</div>
             <div class="memo-carousel-view">
               ${memos.length > 1 ? `<button type="button" class="memo-nav prev" id="memo-prev" aria-label="이전 메모">‹</button>` : ''}
-              <div class="memo-slide" id="memo-slide">${esc(memos[0])}</div>
+              <div class="memo-slide">
+                <div class="memo-date" id="memo-date">${esc(first.date)}</div>
+                <div class="memo-body" id="memo-body">${esc(first.body)}</div>
+              </div>
               ${memos.length > 1 ? `<button type="button" class="memo-nav next" id="memo-next" aria-label="다음 메모">›</button>` : ''}
             </div>
             ${memos.length > 1 ? `<div class="memo-dots" id="memo-dots">${memos.map((_, i) => `<span class="memo-dot${i === 0 ? ' active' : ''}" data-i="${i}"></span>`).join('')}</div>` : ''}
           </div>` : ''}
-          <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="${memos.length ? '메모 추가 시 입력 (새 메모가 맨 앞에 추가돼요)' : '배정 메모 (선택) — 잔디 알림에 함께 전송돼요'}"></textarea>
-          <div class="assign-cur${cur ? '' : ' none'}">${cur ? `현재 배정: <b>${esc(cur)}</b>` : '아직 배정 안 됨'}</div>
+          <div class="assign-box-row memo-add-row">
+            <textarea id="assign-memo" class="assign-memo" rows="2" placeholder="새 배정 메모 입력 → '메모 추가' (최신이 맨 앞)"></textarea>
+            <button type="button" class="btn-assign btn-memo" id="memo-add-btn">메모 추가</button>
+          </div>
         `;
         document.getElementById('assign-btn').onclick = doAssign;
+        document.getElementById('memo-add-btn').onclick = doAddMemo;
         // 메모 캐러셀 넘기기 (최신이 맨 앞, 1/N 표시)
         if (memos.length > 1) {
           let mi = 0;
-          const slide = document.getElementById('memo-slide');
+          const dateEl = document.getElementById('memo-date');
+          const bodyEl = document.getElementById('memo-body');
           const idxEl = document.getElementById('memo-idx');
           const dots = Array.from(document.querySelectorAll('#memo-dots .memo-dot'));
           const show = n => {
             mi = (n + memos.length) % memos.length;
-            slide.textContent = memos[mi];
+            const e = splitMemoEntry(memos[mi]);
+            dateEl.textContent = e.date;
+            bodyEl.textContent = e.body;
             if (idxEl) idxEl.textContent = String(mi + 1);
             dots.forEach((d, i) => d.classList.toggle('active', i === mi));
           };
@@ -3545,10 +3573,8 @@
       const btn = document.getElementById('assign-btn');
       const id = recordId(currentDetail);
       const r = currentDetail;
-      // 새 메모 입력 시 → 기존 메모 앞에 추가(최신이 맨 앞). 비워두면 기존 메모 유지.
-      const memoTyped = (document.getElementById('assign-memo')?.value || '').trim();
-      const prevMemo = String(currentDetail.assign_memo || '').trim();
-      const assignMemo = memoTyped ? (prevMemo ? (memoTyped + MEMO_SEP + prevMemo) : memoTyped) : prevMemo;
+      // 메모는 '메모 추가' 버튼에서 따로 저장. 배정 시엔 기존 메모를 그대로 보존(덮어쓰기 방지).
+      const assignMemo = String(currentDetail.assign_memo || '').trim();
 
       btn.classList.add('loading'); btn.disabled = true;
       try {
@@ -3581,6 +3607,39 @@
       } catch (err) {
         log('error', '담당자 배정 실패', { error: err.message });
         toast('배정 실패: ' + err.message, 'error');
+      } finally {
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    }
+
+    // 메모만 추가 (수정 웹훅 사용 → 딜 생성 안 함, 담당자 배정과 분리)
+    async function doAddMemo() {
+      if (!currentDetail) return;
+      const ta = document.getElementById('assign-memo');
+      const memoTyped = (ta?.value || '').trim();
+      if (!memoTyped) { toast('추가할 메모를 입력하세요', 'error'); ta?.focus(); return; }
+      const btn = document.getElementById('memo-add-btn');
+      const id = recordId(currentDetail);
+      const prevMemo = String(currentDetail.assign_memo || '').trim();
+      const entry = nowStamp() + '\n' + memoTyped;
+      const combined = prevMemo ? (entry + MEMO_SEP + prevMemo) : entry;
+      // 현재 레코드 전체 + 새 메모 → 수정 웹훅(다른 필드 보존, 딜 생성 없음)
+      const data = { ...currentDetail, assign_memo: combined };
+
+      btn.classList.add('loading'); btn.disabled = true;
+      try {
+        const res = await fetchWithTimeout(CONFIG.updateWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', type: 'inquiry', id, row: id, data })
+        }, CONFIG.timeout);
+        if (!res.ok) throw new Error('서버 응답 ' + res.status);
+        currentDetail.assign_memo = combined;
+        toast('메모 추가 완료 📝', 'success');
+        openDetail(currentDetail);
+      } catch (err) {
+        log('error', '메모 추가 실패', { error: err.message });
+        toast('메모 추가 실패: ' + err.message, 'error');
       } finally {
         btn.classList.remove('loading'); btn.disabled = false;
       }
