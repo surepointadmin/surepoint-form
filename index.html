@@ -1824,6 +1824,20 @@
                 <input type="text" name="i_company_name" placeholder="예: 한국물류센터" />
               </div>
               <div class="field">
+                <label>업체 유형</label>
+                <select name="i_company_type">
+                  <option value="">선택해주세요</option>
+                  <option value="제조">제조</option>
+                  <option value="물류·창고">물류·창고</option>
+                  <option value="건설">건설</option>
+                  <option value="유통·마트">유통·마트</option>
+                  <option value="항만·하역">항만·하역</option>
+                  <option value="관공서·공공">관공서·공공</option>
+                  <option value="렌탈사">렌탈사</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div class="field">
                 <label>고객사 담당자 <span class="required">*</span></label>
                 <input type="text" name="i_client_name" placeholder="홍길동" />
               </div>
@@ -2315,6 +2329,7 @@
       const get = n => document.querySelector(`[name="${n}"]`)?.value.trim() || '';
       return {
         company_name: get('i_company_name'),
+        company_type: get('i_company_type'),
         client_name: get('i_client_name'),
         client_phone: get('i_client_phone'),
         client_email: get('i_client_email'),
@@ -2514,7 +2529,7 @@
       
       let m = `# [슈어포인트] 문의 접수${customerBadge} [신규]\n`;
       m += `■ 기본 정보\n`;
-      m += `- 고객사 : ${d.company_name}\n`;
+      m += `- 고객사 : ${d.company_name}${d.company_type ? ` (${d.company_type})` : ''}\n`;
       m += `- 고객사 담당자 : ${d.client_name}\n`;
       m += `- 연락처 : ${d.client_phone}\n`;
       if (d.client_email) m += `- 이메일 : ${d.client_email}\n`;
@@ -3393,6 +3408,7 @@
     function fieldDefs(type) {
       const base = { group: '기본 정보', rows: [
         ['company_name', '업체명', 'text'],
+        ['company_type', '업체 유형', 'text'],
         ['client_name', '담당자', 'text'],
         ['client_position', '직함', 'text'],
         ['client_phone', '연락처', 'tel'],
